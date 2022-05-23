@@ -21,7 +21,7 @@
         // if muation is caused by our added button elements return to avoid infinte recursion
         if(mutationsList.find(el => el.addedNodes[0]?.id === "userscript-added-button")) return;
 
-        const questionElementSelector = "div.detailed-result-panel--panel-row--2aE8z:nth-child(2) > form:nth-child(1)"
+        const questionElementSelector = "div.detailed-result-panel--panel-row--2aE8z > form"
         document.querySelectorAll(questionElementSelector)
             .forEach(el => {
 
@@ -29,7 +29,7 @@
             if(el.querySelector("#userscript-added-button")) return;
 
             const question = el.querySelector("#question-prompt").textContent.trim()
-            const allAnswers = Array.from(el.querySelector("ul").querySelectorAll("p")).map(el => el.textContent.trim()).join("\n\n");
+            const allAnswers = Array.from(el.querySelector("ul").querySelectorAll("p")).map(el => "\t•\t " + el.textContent.trim()).join("\n\n");
             const explanation = el.querySelector(".mc-quiz-question--explanation--Q5KHQ > div")?.textContent.trim()
 
             const copyQuestionButton = document.createElement("button");

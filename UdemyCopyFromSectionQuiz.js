@@ -38,7 +38,7 @@
             copyAnswerButton?.parentNode.removeChild(copyAnswerButton);
 
             const question = document.querySelector("#question-prompt > p:nth-child(1)").innerText
-            const answers = Array.from(document.querySelectorAll("#udemy > div.main-content-wrapper > div.main-content > div > div > main > div > div.app--row--1ydzX.app--body-container--10gJo > div > div > div > div > div > div > div > div > div > div > div > div > div > div > form > ul > li > label > div.udlite-heading-md > div > div > p")).map((el) => "\t\t•\t " + el.innerText);
+            const answers = Array.from(document.querySelectorAll("#udemy > div.main-content-wrapper > div.main-content > div > div > main > div > div.app--row--1ydzX.app--body-container--10gJo > div > div > div > div > div > div > div > div > div > div > div > div > div > div > form > ul > li > label > div.udlite-heading-md > div > div > p")).map((el) => "\t• " + el.innerText);
             const copyText = question + "\n\n" + answers.join("\n");
 
             const copyQuestionButton = document.createElement("button");

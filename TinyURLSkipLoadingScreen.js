@@ -18,11 +18,14 @@
     // Options for the observer (which mutations to observe)
     const config = { attributes: true, childList: true, subtree: true };
 
+    let isNavigating = false;
+
     const callback = function() {
         const skipATag = document.querySelector("ul > li > a")
-        if(skipATag) {
+        if(skipATag && !isNavigating) {
             const link = skipATag.href;
             window.location.replace(link);
+            isNavigating = true;
         }
     }
 

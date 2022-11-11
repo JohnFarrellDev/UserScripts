@@ -27,18 +27,19 @@
 
         for(let i = 0; i <= verifiedAccountLogos.length; i++) {
             const requiredElement = verifiedAccountLogos[i]?.parentElement.parentElement.parentElement;
-            if(requiredElement?.flaggedAsPaid || !requiredElement) continue;
+
             const propertiesFromRequiredElement = Object.getOwnPropertyNames(requiredElement)
 
             const reactProperty = propertiesFromRequiredElement.find(x => x.startsWith("__reactProps"))
 
             const importantProps = lookForProps(requiredElement[reactProperty].children)
 
-            const onlyPaidVerified = importantProps?.isBlueVerified && !importantProps?.isVerified;
+            if(importantProps?.isVerified && importantProps?.isBlueVerified) {
+                verifiedAccountLogos[i].style.color = 'gold'
+            }
 
-            if(onlyPaidVerified) {
-                verifiedAccountLogos[i].style.backgroundColor = 'green'
-                requiredElement.flaggedAsPaid = true;
+            if(importantProps?.isBlueVerified && !importantProps?.isVerified) {
+                verifiedAccountLogos[i].style.color = 'green'
             }
         }
     }

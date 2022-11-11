@@ -23,10 +23,10 @@
 
     const callback = function() {
 
-        const verifiedAccountDivs = [...document.querySelectorAll("svg[aria-label='Verified account']")]
+        const verifiedAccountLogos = [...document.querySelectorAll("svg[aria-label='Verified account']")]
 
-        for(let i = 0; i <= verifiedAccountDivs.length; i++) {
-            const requiredElement = verifiedAccountDivs[i]?.parentElement.parentElement.parentElement;
+        for(let i = 0; i <= verifiedAccountLogos.length; i++) {
+            const requiredElement = verifiedAccountLogos[i]?.parentElement.parentElement.parentElement;
             if(requiredElement?.flaggedAsPaid || !requiredElement) continue;
             const propertiesFromRequiredElement = Object.getOwnPropertyNames(requiredElement)
 

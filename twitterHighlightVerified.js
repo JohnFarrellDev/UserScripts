@@ -37,7 +37,7 @@
             const onlyPaidVerified = importantProps?.isBlueVerified && !importantProps?.isVerified;
 
             if(onlyPaidVerified) {
-                requiredElement.style.backgroundColor = 'green'
+                verifiedAccountLogos[i].style.backgroundColor = 'green'
                 requiredElement.flaggedAsPaid = true;
             }
         }
@@ -54,6 +54,7 @@
 const lookForProps = (element) => {
     const stack = [element]
     while(stack.length) {
+
         const currentElement = stack.shift()
         if(!currentElement) continue;
 
@@ -75,7 +76,7 @@ const lookForProps = (element) => {
             continue;
         }
 
-        stack.push(currentElement.props.children)
+        if(currentElement?.props?.children) stack.push(currentElement.props.children)
     }
 }
 

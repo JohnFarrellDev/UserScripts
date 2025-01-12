@@ -31,7 +31,12 @@
   // Function to copy text to clipboard using modern API
   async function copyToClipboard(text) {
     try {
-      await navigator.clipboard.writeText(text);
+      const newText = window.currentText
+        ? window.currentText + "\n\n" + text
+        : text;
+      window.currentText = newText;
+
+      await navigator.clipboard.writeText(newText);
       return true;
     } catch (err) {
       console.error("Failed to copy text: ", err);
@@ -41,7 +46,6 @@
 
   // Function to add video ID buttons
   function addVideoIdButtons() {
-    console.log("Adding video ID buttons");
     const videoContainer = document.querySelector("#contents");
 
     if (!videoContainer) return;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Udemy - Copy from Section Quiz
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      2.0
 // @description  Easily copy questions and answers from Udemy section quizzes
 // @author       John Farrell (https://www.johnfarrell.dev/)
 // @match        https://www.udemy.com/course/*
@@ -17,79 +17,107 @@
   // Options for the observer (which mutations to observe)
   const config = { attributes: true, childList: true, subtree: true };
 
-  const callback = function (mutationsList, observer) {
-    // return if mutationList contains mutations caused by us adding buttons, otherwise get infinite recursion until browser crashes
-    if (
-      mutationsList.find(
-        (el) =>
-          el.addedNodes[0]?.id === "userscript-added-button-copy-question" ||
-          el.addedNodes[0]?.id === "userscript-added-button-copy-answer"
-      )
-    ) {
-      return;
-    }
+  const copyQuestionId = "userscript-added-button-copy-question";
+  const copyAnswerOptionsId = "userscript-added-button-copy-answer-options";
+  const copyAnswerId = "userscript-added-button-copy-answer";
 
-    const isQuizPage =
-      document.querySelector(
-        'div[class^="compact-quiz-container--compact-quiz-container--"]'
-      ) !== null;
-    if (!isQuizPage) {
-      return;
-    }
+  const ourButtonIds = [copyQuestionId, copyAnswerOptionsId, copyAnswerId];
 
-    const progressionButton = document.querySelector(
-      'button[data-purpose="next-question-button"]'
+  const selectors = {
+    quizPage: 'div[class^="compact-quiz-container--compact-quiz-container--"]',
+    nextQuestionButton: 'button[data-purpose="next-question-button"]',
+    quizFooter:
+      'div[class^="curriculum-item-footer--flex-align-center--"] > div',
+    questionContainer: "#question-prompt",
+    possibleAnswersContainer: 'ul[aria-labelledby="question-prompt"]',
+  };
+
+  const udemyText = {
+    nextQuestion: {
+      check: "Check answer",
+      next: "Next",
+      results: "See results",
+    },
+  };
+
+  const callback = function (mutationsList) {
+    const addedNodes = mutationsList
+      .map((element) => {
+        return element.addedNodes;
+      })
+      .filter((nodeList) => nodeList.length > 0 && nodeList[0].id)
+      .map((node) => node[0].id);
+
+    const isOurMutation = addedNodes.reduce((prev, curr) => {
+      if (prev) return prev;
+
+      return ourButtonIds.includes(curr);
+    }, false);
+
+    if (isOurMutation) return;
+
+    const isQuizPage = document.querySelector(selectors.quizPage);
+
+    if (!isQuizPage) return;
+
+    const nextQuestionButton = document.querySelector(
+      selectors.nextQuestionButton
     );
 
-    if (!progressionButton) {
-      return;
-    }
+    if (!nextQuestionButton) return;
 
-    const isQuestionStep = progressionButton.textContent === "Check answer";
+    const isQuestionStep =
+      nextQuestionButton.textContent === udemyText.nextQuestion.check;
+
     const isAnswerStep =
-      progressionButton.textContent === "Next" ||
-      progressionButton.textContent === "See results";
+      nextQuestionButton.textContent === udemyText.nextQuestion.next ||
+      nextQuestionButton.textContent === udemyText.nextQuestion.results;
 
-    const quizFooter = document.querySelector(
-      'div[class^="curriculum-item-footer--flex-align-center--"] > div'
-    );
+    const quizFooter = document.querySelector(selectors.quizFooter);
 
     if (isQuestionStep) {
-      if (document.querySelector("#userscript-added-button-copy-question")) {
-        return;
-      }
+      if (document.querySelector(copyQuestionId)) return;
 
       // remove the copy answer button added from isAnswerStep
-      const copyAnswerButton = document.querySelector(
-        "#userscript-added-button-copy-answer"
-      );
+      const copyAnswerButton = document.querySelector(copyAnswerId);
       copyAnswerButton?.parentNode.removeChild(copyAnswerButton);
 
-      const questionElement = document.querySelector("#question-prompt");
-      const question = questionElement.innerText;
-
-      const answerContainer = document.querySelector(
-        'ul[aria-labelledby="question-prompt"]'
+      const questionContainer = document.querySelector(
+        selectors.questionContainer
       );
-      const answers = Array.from(answerContainer.querySelectorAll("li")).map(
-        (el) => "\t• " + el.innerText
-      );
+      const question = questionContainer.innerText;
 
-      const copyText = question + "\n\n" + answers.join("\n");
+      const possibleAnswersContainer = document.querySelector(
+        selectors.possibleAnswersContainer
+      );
+      const answers = Array.from(
+        possibleAnswersContainer.querySelectorAll("li")
+      )
+        .map((el) => el.innerText)
+        .join("\n\n");
 
       const copyQuestionButton = document.createElement("button");
-      copyQuestionButton.setAttribute(
-        "id",
-        "userscript-added-button-copy-question"
-      );
+      copyQuestionButton.setAttribute("id", copyQuestionId);
       copyQuestionButton.innerHTML = "Copy Question";
       copyQuestionButton.addEventListener("click", () => {
-        navigator.clipboard.writeText(copyText);
+        navigator.clipboard.writeText(question);
+      });
+
+      const copyAnswerOptionsButton = document.createElement("button");
+      copyAnswerOptionsButton.setAttribute("id", copyAnswerOptionsId);
+      copyAnswerOptionsButton.innerHTML = "Copy Options";
+      copyAnswerOptionsButton.addEventListener("click", () => {
+        navigator.clipboard.writeText(answers);
       });
 
       quizFooter.append(copyQuestionButton);
-    } else if (isAnswerStep) {
-      if (document.querySelector("#userscript-added-button-copy-answer")) {
+      quizFooter.append(copyAnswerOptionsButton);
+
+      return;
+    }
+
+    if (isAnswerStep) {
+      if (document.querySelector(copyAnswerId)) {
         return;
       }
 
@@ -108,10 +136,7 @@
         : answers;
 
       const copyAnswerButton = document.createElement("button");
-      copyAnswerButton.setAttribute(
-        "id",
-        "userscript-added-button-copy-answer"
-      );
+      copyAnswerButton.setAttribute("id", copyAnswerId);
       copyAnswerButton.innerHTML = "Copy Answer";
       copyAnswerButton.addEventListener("click", () => {
         navigator.clipboard.writeText(copyText);
@@ -119,20 +144,14 @@
 
       quizFooter.append(copyAnswerButton);
 
-      const nextQuestionSelector =
-        'button[data-purpose="next-question-button"]';
       document
-        .querySelector(nextQuestionSelector)
+        .querySelector(selectors.nextQuestionButton)
         .addEventListener("click", () => {
           // remove the copy question button when we click to go to the next question
-          const copyQuestionButton = document.querySelector(
-            "#userscript-added-button-copy-question"
-          );
+          const copyQuestionButton = document.querySelector(copyQuestionId);
           copyQuestionButton?.parentNode.removeChild(copyQuestionButton);
 
-          const copyAnswerButton = document.querySelector(
-            "#userscript-added-button-copy-answer"
-          );
+          const copyAnswerButton = document.querySelector(copyAnswerId);
           copyAnswerButton?.parentNode.removeChild(copyAnswerButton);
         });
     }

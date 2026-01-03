@@ -186,10 +186,12 @@
 
       container.append(copyAnswerButton);
 
-      const additionalInfo =
-        document
-          .querySelector('div[class*="alert-banner-module--body--"]')
-          ?.textContent.trim() || "";
+      const additionalInfo = correctAnswerContainers
+        .map(
+          (element) =>
+            element.querySelector(".ud-text-sm > div > div").textContent
+        )
+        .join("\n\n");
 
       if (additionalInfo) {
         const additionalInfoButton = document.createElement("button");
